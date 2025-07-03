@@ -5,7 +5,7 @@
 "scripts": {
 "dev": "next dev",
 "build": "next build",
-"start": "next Start"
+"start": "next start"
 },
 "dependencies": {
 "next": "14.0.4",
