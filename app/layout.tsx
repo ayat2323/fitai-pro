@@ -1,8 +1,8 @@
-import type { Metadate } from "next"
+import type { Metadata } from "next"
 import { Inter } from 'next/font/google'
 import "./globals.css"
 
-const intern = Inter ({ subsets: ["latin] })
+const inter = Inter ({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
 title: "FitAI Pro - Wissenschaftlich perfekte Trainingspläne",
@@ -16,7 +16,7 @@ children: React.ReactNode
 }) {
 return (
 <html lang="de">
-<body className={inter.className}>{children}>/body>
+<body className={intern.className}>{children}</body>
 </html>
 )
 }
