@@ -16,7 +16,7 @@ children: React.ReactNode
 }) {
 return (
 <html lang="de">
-<body className={intern.className}>{children}</body>
+<body className={inter.className}>{children}</body>
 </html>
 )
 }
