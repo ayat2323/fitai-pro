@@ -9,7 +9,7 @@ title: "FitAI Pro - Wissenschaftlich perfekte Trainingspläne",
 description: "KI-Präzision trifft auf menschliche Expertise",
 }
 
-export default funciton RootLayout({
+export default function RootLayout({
 children,
 }: {
 children: React.ReactNode
