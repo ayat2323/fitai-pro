@@ -1,0 +1,48 @@
+Ah, das ist ein sehr häufiges Problem! Die Fehlermeldung ist eindeutig:
+
+```plaintext
+remote: error: File ... is 142.74 MB; this exceeds GitHub's file size limit of 100.00 MB
+```
+
+**Das Problem:** Du hast versehentlich den `node_modules`-Ordner zu Git hinzugefügt. Dieser Ordner enthält alle externen Code-Bibliotheken, ist oft riesig und sollte **niemals** in Git gespeichert werden. GitHub blockiert den Push, weil einige Dateien darin zu groß sind.
+
+**Die Lösung:** Wir müssen Git sagen, dass es diesen Ordner ignorieren soll, und ihn dann aus der Versionskontrolle entfernen.
+
+Keine Sorge, das ist schnell behoben.
+
+### Schritt 1: Erstelle eine `.gitignore`-Datei
+
+Diese Datei sagt Git, welche Ordner und Dateien es ignorieren soll. Erstelle eine neue Datei im Hauptverzeichnis deines Projekts mit dem Namen `.gitignore` und füge folgenden Inhalt ein:
+
+```plaintext
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Next.js build output
+/.next/
+/out/
+
+# Production
+/build
+
+# Misc
+.DS_Store
+*.pem
+
+# Local Environment Variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
