@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, CreditCard, Shield, CheckCircle } from "lucide-react"
+import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js"
 
 interface CheckoutFormProps {
   planType: "basic" | "premium" | "elite"
@@ -44,34 +45,58 @@ export function CheckoutForm({ planType, onClose }: CheckoutFormProps) {
 
   const plan = planDetails[planType]
 
+  const stripe = useStripe()
+  const elements = useElements()
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!customerData.name || !customerData.email) {
-      setError("Bitte fülle alle Pflichtfelder aus")
+    if (!stripe || !elements || !customerData.name || !customerData.email) {
+      setError("Stripe ist noch nicht geladen oder es fehlen Kundendaten.")
       return
     }
 
     setIsProcessing(true)
     setError("")
 
-    try {
-      // Simulate payment processing for now
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+    // 1. Erstelle einen Payment Intent auf unserem Server
+    const res = await fetch("/api/create-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ planType, customerData }),
+    })
 
-      console.log("Demo Zahlung:", {
-        plan: planType,
-        customer: customerData.name,
-        email: customerData.email,
-        amount: plan.price,
-      })
+    const { clientSecret, error: backendError } = await res.json()
 
-      setPaymentSuccess(true)
-    } catch (error) {
-      setError("Zahlung fehlgeschlagen. Bitte versuche es erneut.")
-    } finally {
+    if (backendError) {
+      setError(backendError)
       setIsProcessing(false)
+      return
     }
+
+    // 2. Bestätige die Zahlung auf dem Client mit dem Secret
+    const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/payment-success`,
+        receipt_email: customerData.email,
+      },
+      redirect: "if_required",
+    })
+
+    if (stripeError) {
+      setError(stripeError.message || "Ein unerwarteter Fehler ist aufgetreten.")
+      setIsProcessing(false)
+      return
+    }
+
+    if (paymentIntent && paymentIntent.status === "succeeded") {
+      console.log("Zahlung erfolgreich!", paymentIntent)
+      setPaymentSuccess(true)
+    } else {
+      setError("Zahlung fehlgeschlagen.")
+    }
+
+    setIsProcessing(false)
   }
 
   if (paymentSuccess) {
@@ -181,12 +206,8 @@ export function CheckoutForm({ planType, onClose }: CheckoutFormProps) {
                 />
               </div>
 
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <div className="text-center text-blue-700">
-                  <CreditCard className="h-8 w-8 mx-auto mb-2" />
-                  <p className="text-sm font-medium">Demo Checkout</p>
-                  <p className="text-xs">Echte Stripe-Integration wird nach Vercel-Deployment aktiviert</p>
-                </div>
+              <div className="py-4">
+                <PaymentElement />
               </div>
 
               <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -197,17 +218,17 @@ export function CheckoutForm({ planType, onClose }: CheckoutFormProps) {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                disabled={isProcessing}
+                disabled={isProcessing || !stripe || !elements}
               >
                 {isProcessing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Demo Zahlung wird verarbeitet...
+                    Zahlung wird verarbeitet...
                   </>
                 ) : (
                   <>
                     <CreditCard className="mr-2 h-4 w-4" />
-                    Demo: {plan.price}€ bezahlen
+                    Jetzt sicher {plan.price}€ bezahlen
                   </>
                 )}
               </Button>

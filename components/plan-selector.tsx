@@ -6,6 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, X } from "lucide-react"
 import { CheckoutForm } from "./checkout-form"
+import { loadStripe } from "@stripe/stripe-js"
+import { Elements } from "@stripe/react-stripe-js"
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 export function PlanSelector() {
   const [selectedPlan, setSelectedPlan] = useState<"basic" | "premium" | "elite" | null>(null)
@@ -21,18 +25,33 @@ export function PlanSelector() {
     setSelectedPlan(null)
   }
 
+  const planDetails = {
+    basic: { price: 39 },
+    premium: { price: 89 },
+    elite: { price: 149 },
+  }
+
   if (showCheckout && selectedPlan) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold">Checkout</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
             <Button variant="ghost" onClick={handleClose}>
               <X className="h-4 w-4 mr-2" />
               Zurück
             </Button>
           </div>
-          <CheckoutForm planType={selectedPlan} onClose={handleClose} />
+          <Elements
+            stripe={stripePromise}
+            options={{
+              mode: "payment",
+              amount: planDetails[selectedPlan].price * 100,
+              currency: "eur",
+            }}
+          >
+            <CheckoutForm planType={selectedPlan} onClose={handleClose} />
+          </Elements>
         </div>
       </div>
     )
