@@ -1,14 +1,11 @@
-export default function Home() {
-return (
-<div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-<div className="container mx-auto px-4 py-20 text-center">
-<h1 className="text-5xl font-bold text-white mb-6">
-FitAI Pro
-</h1>
-<p className="text-xl text-gray-300 mb-8">
-Wissenschaftlich perfekte Trainingspläne
-</p>
-</div>
-</div>
-)
+import { Button } from "@/components/ui/button"
+
+export default function TrainingsplanLanding() {
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-8">
+      <h1 className="text-4xl font-bold mb-4">Testseite</h1>
+      <p className="mb-4">Wenn du das siehst, funktioniert die Basis.</p>
+      <Button>Test Button</Button>
+    </div>
+  )
 }
